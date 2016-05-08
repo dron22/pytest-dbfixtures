@@ -19,6 +19,7 @@ before_install:
   - sudo service elasticsearch restart
   - sudo usermod -G elasticsearch $USER
   - ES_PIP_VERSION="$(echo $ES_URL | cut -d "-" -f 2 | cut -d "." -f 1,2).0"
+  - echo $ES_PIP_VERSION
 install:
 - $INSTALLATION
 - pip install elasticsearch==$ES_PIP_VERSION
