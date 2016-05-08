@@ -7,23 +7,25 @@ python:
 - '3.4'
 - '3.5'
 env:
- - INSTALLATION="python setup.py develop" XDIST=1 ES_URL="https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.2/elasticsearch-2.3.2.deb"
+  - INSTALLATION="python setup.py develop" XDIST=1 ES_URL="https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.2/elasticsearch-2.3.2.deb"
   - INSTALLATION="python setup.py develop" XDIST=1 ES_URL="https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.4.deb"
   # unfortunatelly, xdist hangs if there's any error in the slave threads, and there, pytest fires all the hooks
   - INSTALLATION="pip install ." XDIST=0 ES_URL="https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.2/elasticsearch-2.3.2.deb"
   - INSTALLATION="pip install ." XDIST=0 ES_URL="https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.4.deb"
 before_install:
-    - curl -O $ES_URL
-    - ES_DEB=$(echo $ES_URL | rev | cut -d "/" -f 1 | rev)
-    - sudo dpkg -i --force-confnew $ES_DEB
-    - sudo service elasticsearch restart
-    - sudo usermod -G elasticsearch $USER
+  - curl -O $ES_URL
+  - ES_DEB=$(echo $ES_URL | rev | cut -d "/" -f 1 | rev)
+  - sudo dpkg -i --force-confnew $ES_DEB
+  - sudo service elasticsearch restart
+  - sudo usermod -G elasticsearch $USER
+  - ES_PIP_VERSION="$(echo $ES_URL | cut -d "-" -f 2 | cut -d "." -f 1,2).0"
 install:
 - $INSTALLATION
+- pip install elasticsearch==$ES_PIP_VERSION
 - pip install pytest_dbfixtures[mongodb,redis,rabbitmq,mysql,postgresql,elasticsearch,tests]
 - pip install wheel
 before_script:
-    - sleep 10
+- sleep 10
 script:
 - sudo -E su $USER -c ". $VIRTUAL_ENV/bin/activate; py.test -n $XDIST --max-slave-restart=0 --showlocals --verbose --cov pytest_dbfixtures tests -p no:dbfixtures"
 - pylama
